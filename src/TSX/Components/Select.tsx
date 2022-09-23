@@ -2,20 +2,32 @@ import styles from './select.module.css';
 import { useState, useEffect, useRef } from "react";
 
 //==============================Typescript================================//
+
+const Placeholder = "SELECT";
+
 export type SelectOption = {
+    priced?: boolean
+    named?: boolean
+    valued?: false
+    titled?: boolean
     label: string
     value: string | number
+    price: string | number
+    name?: string | number
 }
 
 type SingleSelectProps = {
     multiple?: false
+    price?: SelectOption
     value?: SelectOption
+    name?: SelectOption
     onChange: (value: SelectOption | undefined) => void
 }
 
 type MultipleSelectProps = {
     multiple: true
     value?: SelectOption
+    name?: SelectOption
     onChange: (value: SelectOption[]) => void
 }
 
@@ -23,7 +35,7 @@ type SelectProps = {
     options: SelectOption[]
 } & ( SingleSelectProps | MultipleSelectProps )
 
-export function Select({ multiple, value, onChange, options }: SelectProps) {
+export function Select({ valued, named, priced, titled, multiple, value, onChange, options }: SelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null)
@@ -76,15 +88,6 @@ export function Select({ multiple, value, onChange, options }: SelectProps) {
                             }
                             break
                         }
-                        // case "Enter":
-                        // case "Space":{
-                        //     const newValue = highlightedIndex + (e.code === "ArrowDown" ? 1 : -1)
-
-                        //     if (newValue >= 0 && newValue <options.length) {
-                        //         setHighlightedIndex(newValue)
-                        //     }
-                        // }
-                        // break
                            
                 case "Escape":
                     setIsOpen(false)
@@ -108,17 +111,58 @@ export function Select({ multiple, value, onChange, options }: SelectProps) {
                 className={styles.container}
             >
                 <span className={styles.value}>
+                     {multiple && !value?.length ? Placeholder : <></>}
+                    
+                    {/* // MULTI */}
                     {multiple ? value.map(
                         v => (
                             <button key={v.value} className={styles["option-badge"]} onClick={e => {
                                 e.stopPropagation();
                                 selectOption(v);
                             }}>
-                                {v.label}
+                                {
+                                    (valued && named)
+                                    ? "Select Option Conflict" :
+                                        titled ? ( <>
+                                                        {priced ? v.price + " - " : ""} 
+                                                        <label className="multi-label">{v.label}</label>
+                                                        <p>{v.value}</p>
+                                                    </>
+                                        ) :
+                                            priced ? (
+                                                `${v.price} - ` + 
+                                                `${named ? v.name :
+                                                    valued ? v.value : 
+                                                        v.label}`
+                                            ) :
+                                                named ? v.name :
+                                                    valued ? v.value : 
+                                                        v.label
+                                }
                                 <span className={styles["remove-btn"]}>&times;</span>
                             </button>
-                        )
-                    ) : value?.label}
+                            )
+                        ) : 
+                        // SINGLE
+                            (valued && named)
+                            ? "Select Option Conflict" :
+                            value === undefined ? <>{Placeholder}</> :
+                                titled ? (  <>
+                                                <p className='price'></p>{priced ? value?.price + " - " : ""} 
+                                                <label className="multi-label">{value?.label}</label>
+                                                <p className='value'>{value?.value}</p>
+                                            </>
+                                            ) :
+                                                priced ? (
+                                                    `${value?.price} - ` + 
+                                                    `${named ? value?.name :
+                                                        valued ? value?.value : 
+                                                            value?.label}`
+                                                ) :
+                                                    named ? value?.name :
+                                                        valued ? value?.value : 
+                                                            value?.label
+                    } 
                 </span>
                 {value  ?
                     <button 
@@ -133,6 +177,8 @@ export function Select({ multiple, value, onChange, options }: SelectProps) {
                 <div className={styles.divider}></div>
                 <div className={` ${styles.caret } ${isOpen ? styles.rotate : ""}`}></div>
                 <ul className={`${styles.options} ${isOpen ? styles.show : ""}`}>
+                    
+                    {/* Dropdown Items */}
                     {options.map((option, index) => (
                         <li 
                             key={option.value} 
@@ -147,8 +193,25 @@ export function Select({ multiple, value, onChange, options }: SelectProps) {
                                 selectOption(option);
                                 setIsOpen(false)
                             }}
-                        >
-                            {option.label}
+                        >{
+                            (valued && named)
+                            ? "Select Option Conflict" :
+                            //  titled ? (  <>
+                            //                     <p className='price'></p>{priced ? value?.price + " - " : ""} 
+                            //                     <label className="multi-label">{value?.label}</label>
+                            //                     <p className='value'>{value?.value}</p>
+                            //                 </>
+                            //                 ) :
+                            priced ? (
+                                option?.price + " - " + 
+                                `${named ? option?.name :
+                                    valued ? option?.value : 
+                                        option?.label}`
+                            ) :
+                                named ? option?.name :
+                                    valued ? option?.value : 
+                                        option?.label
+                        }
                         </li>
                     ))}
                 </ul>

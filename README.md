@@ -1,1 +1,7 @@
 # component-dropdown
+
+Notes:
+
+
+
+Bugs: 
