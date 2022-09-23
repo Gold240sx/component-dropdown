@@ -164,7 +164,7 @@ export function Select({ valued, named, priced, titled, multiple, value, onChang
                                                             value?.label
                     } 
                 </span>
-                {value  ?
+                {(!multiple && value) || (multiple && value?.length) ?
                     <button 
                         onClick={e => {
                             clearOptions();
